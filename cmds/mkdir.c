@@ -1,18 +1,19 @@
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/syscall.h> // for SYS_mkdir
+#include <errno.h>       // for errno
+#include <string.h>      // for strerror
 
 int main(int argc, char ** argv){
 	if (argc == 1){
 		fprintf(stderr, "minsh: Argument required\n");
 		return 1;
 	}
-	int i = 1;
-	for (i = 1 ; i < argc ; i++){
-		// Try creating the directory
-		if ( mkdir(argv[i], 0755) < 0 ){
-			fprintf(stderr, "minsh: %s - ", argv[i]);
-			perror("");
+	for (int i = 1 ; i < argc ; i++){
+		// Direct system call to mkdir
+		long result = syscall(SYS_mkdir, argv[i], 0755);
+		if (result < 0){
+			fprintf(stderr, "minsh: %s - %s\n", argv[i], strerror(errno));
 			continue;
 		}
 	}
